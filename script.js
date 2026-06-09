@@ -1,5 +1,3 @@
-// ===== PUBLIC/SCRIPT.JS - ΔΙΟΡΘΩΜΕΝΗ ΈΚΔΟΣΗ ===== //
-
 let quotes = [];
 let tags = [];
 let filteredQuotes = [];
@@ -7,20 +5,14 @@ let currentIndex = 0;
 let activeTagId = null;
 let isDetailsVisible = false;
 
-// ===== ΒΟΗΘΗΤΙΚΗ ΛΕΙΤΟΥΡΓΙΑ ΓΙΑ LOADING TAGS =====
-function showLoadingTags() {
-    const container = document.getElementById('tags-container');
-    if(container) container.innerHTML = '<span class="loading-tag">Φόρτωση δεδομένων...</span>';
-}
-
-// ===== ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ =====
 async function loadData() {
     try {
         console.log("🔄 Προσπάθεια φόρτωσης JSON...");
         
+        // Absolute paths from root - WORKS with https://koulaxizis.github.io/meetabook/
         const [quotesRes, tagsRes] = await Promise.all([
-            fetch('data/quotes.json'),
-            fetch('data/tags.json')
+            fetch('/data/quotes.json'),
+            fetch('/data/tags.json')
         ]);
 
         if (!quotesRes.ok || !tagsRes.ok) {
@@ -34,52 +26,36 @@ async function loadData() {
         tags = tagsData;
         
         console.log(`✅ Επιτυχία! Φορτώθηκαν ${quotes.length} quotes & ${tags.length} tags.`);
-        
         renderTags();
     } catch (error) {
         console.error("❌ ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ:", error);
         
-        // Παρουσίαση χρήσιμου μηνύματος στον χρήστη
         const msg = "❌ Δεν μπόρεσα να φορτώσω τα δεδομένα.\n\n" +
-                    "Αιτία πιθανότατα:\n" +
-                    "1. Δεν τρέχει Local Server (χρειάζεται http://)\n" +
-                    "2. Τα αρχεία JSON δεν βρίσκονται στον φάκελο /data/\n" +
-                    "\nΆνοιξε την κονσόλα (F12) για details.";
+                    "1. Τα αρχεία /data/quotes.json και /data/tags.json πρέπει να υπάρχουν στη ρίζα του repo.\n" +
+                    "2. GitHub Pages Settings → Folder: / (root)\n" +
+                    "3. Refresh page";
         alert(msg);
         
-        // Fallback για testing: Αν φορτώσουν άψυχα datos, προτείνουμε demo
         if (quotes.length === 0) {
-            console.warn("⚠️ Χρήση fallback data για testing...");
-            quotes = [{
-                id: "demo-1",
-                quote: "Αυτό είναι ένα δέμο quote γιατί δεν βρέθηκαν δεδομένα.",
-                author: "System",
-                source_book: "Test",
-                tags: ["demo"],
-                product_tags: ["demo"],
-                optional: {}
-            }];
+            quotes = [{ id: "demo-1", quote: "Demo quote - δεν βρέθηκαν δεδομένα.", author: "System", tags: ["demo"], product_tags: ["demo"], optional: {} }];
             tags = [{id: "demo", label: "Demo", color: "#333"}];
             renderTags();
         }
     }
 }
 
-// Κλήση load
 loadData();
 
-// ===== RENDER TAGS CLOUD =====
 function renderTags() {
     const container = document.getElementById('tags-container');
     if (!container) return;
-
     container.innerHTML = '';
-
+    
     if (!tags || tags.length === 0) {
         container.innerHTML = '<span style="color:red">Δεν βρέθηκαν Tags.</span>';
         return;
     }
-
+    
     tags.forEach(tag => {
         const btn = document.createElement('button');
         btn.className = 'tag-button';
@@ -87,14 +63,11 @@ function renderTags() {
         btn.dataset.tagId = tag.id;
         btn.style.color = tag.color;
         
-        btn.addEventListener('mouseenter', () => {
-            btn.style.backgroundColor = tag.color;
-            btn.style.color = 'white';
-        });
-        btn.addEventListener('mouseleave', () => {
-            if (btn.dataset.tagId === activeTagId) return;
-            btn.style.backgroundColor = '#f0f0f0';
-            btn.style.color = tag.color;
+        btn.addEventListener('mouseenter', () => { btn.style.backgroundColor = tag.color; btn.style.color = 'white'; });
+        btn.addEventListener('mouseleave', () => { 
+            if (btn.dataset.tagId === activeTagId) return; 
+            btn.style.backgroundColor = '#f0f0f0'; 
+            btn.style.color = tag.color; 
         });
         
         btn.addEventListener('click', () => filterByTag(tag.id));
@@ -102,11 +75,9 @@ function renderTags() {
     });
 }
 
-// ===== FILTER BY TAG =====
 function filterByTag(tagId) {
     const wasActive = activeTagId === tagId;
     
-    // Clear previous active state
     document.querySelectorAll('.tag-button').forEach(btn => {
         btn.classList.remove('active');
         btn.style.backgroundColor = '#f0f0f0';
@@ -153,21 +124,13 @@ function filterByTag(tagId) {
     updateUI(filteredQuotes);
 }
 
-// ===== RANDOM QUOTE BUTTON =====
 document.getElementById('random-quote-btn').addEventListener('click', () => {
     const targetArray = activeTagId ? filteredQuotes : quotes;
-    
-    if (targetArray.length === 0) {
-        console.error("No quotes available for random selection.");
-        alert("Δεν υπάρχουν διαθέσιμα γνωμικά (ή δεν έχουν φορτωθεί).");
-        return;
-    }
-
+    if (targetArray.length === 0) { alert("Δεν υπάρχουν διαθέσιμα γνωμικά."); return; }
     const randomIndex = Math.floor(Math.random() * targetArray.length);
     showQuote(randomIndex, targetArray);
 });
 
-// ===== SHOW INITIAL QUOTE =====
 function showQuote(index, sourceArray) {
     filteredQuotes = sourceArray;
     currentIndex = index;
@@ -175,20 +138,14 @@ function showQuote(index, sourceArray) {
     updateUI(sourceArray);
 }
 
-// ===== UPDATE UI =====
 function updateUI(sourceArray) {
     if (!sourceArray || sourceArray.length === 0) return;
-
-    const resultSection = document.getElementById('result-section');
     const quoteData = sourceArray[currentIndex];
 
-    resultSection.classList.remove('hidden');
+    document.getElementById('result-section').classList.remove('hidden');
     document.getElementById('intro-section').classList.add('hidden');
 
-    // Fill Prompt
     document.getElementById('quote-text').textContent = `"${quoteData.quote}"`;
-
-    // Fill Details
     document.getElementById('author').textContent = `— ${quoteData.author}`;
     document.getElementById('source-book').textContent = `Πηγή: ${quoteData.source_book || 'Άγνωστο'}`;
     document.getElementById('price').textContent = quoteData.price || '';
@@ -202,7 +159,6 @@ function updateUI(sourceArray) {
     }
 
     document.getElementById('author-bio-short').textContent = quoteData.author_bio_short || '';
-    
     document.getElementById('author-full-bio').textContent = quoteData.optional?.author_full_bio || 'Δεν υπάρχει αναλυτική βιογραφία.';
 
     const interviewLink = document.getElementById('interview-link');
@@ -215,7 +171,6 @@ function updateUI(sourceArray) {
 
     applyVisibilityState(false);
 
-    // Counters
     document.getElementById('result-counter').textContent = `${sourceArray.length} αποτέλεσμα${sourceArray.length !== 1 ? 'τα' : ''}`;
     document.getElementById('page-indicator').textContent = `${currentIndex + 1} / ${sourceArray.length}`;
     
@@ -244,10 +199,7 @@ function applyVisibilityState(forceHidden = false) {
 }
 
 document.getElementById('like-btn').addEventListener('click', () => {
-    if (!isDetailsVisible) {
-        isDetailsVisible = true;
-        applyVisibilityState();
-    }
+    if (!isDetailsVisible) { isDetailsVisible = true; applyVisibilityState(); }
 });
 
 document.getElementById('skip-btn').addEventListener('click', () => {
@@ -265,38 +217,24 @@ document.getElementById('skip-btn').addEventListener('click', () => {
 });
 
 document.getElementById('prev-btn').addEventListener('click', () => {
-    if (currentIndex > 0) {
-        currentIndex--;
-        isDetailsVisible = false;
-        updateUI(filteredQuotes);
-    }
+    if (currentIndex > 0) { currentIndex--; isDetailsVisible = false; updateUI(filteredQuotes); }
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
-    if (currentIndex < filteredQuotes.length - 1) {
-        currentIndex++;
-        isDetailsVisible = false;
-        updateUI(filteredQuotes);
-    }
+    if (currentIndex < filteredQuotes.length - 1) { currentIndex++; isDetailsVisible = false; updateUI(filteredQuotes); }
 });
 
-// ===== SEARCH FUNCTION =====
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 
 searchBtn.addEventListener('click', performSearch);
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performSearch();
-});
+searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
 
 function performSearch() {
     const query = searchInput.value.trim().toLowerCase();
     if (!query) return alert("Παρακαλώ εισάγετε λέξη-κλειδί.");
 
     const baseArray = activeTagId ? filteredQuotes : quotes;
-    
-    // Log what we are searching in
-    console.log(`Searching for: "${query}" in ${baseArray.length} items.`);
     
     filteredQuotes = baseArray.filter(q =>
         q.quote.toLowerCase().includes(query) ||
@@ -306,10 +244,8 @@ function performSearch() {
         q.source_book?.toLowerCase().includes(query)
     );
 
-    console.log(`Found: ${filteredQuotes.length} results.`);
-
     if (filteredQuotes.length === 0) {
-        alert("Δεν βρέθηκαν αποτελέσματα για \"" + query + "\".\nΔοκίμασε λέξεις όπως: 'poisi', 'philosophia', 'Klee'.");
+        alert("Δεν βρέθηκαν αποτελέσματα για \"" + query + "\".");
         return;
     }
 
