@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Καλλιτεχνικές Σκέψεις</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <!-- Intro Section -->
+    <section id="intro-section">
+      <h1>Τι θα διαβάσεις σήμερα;</h1>
+      
+      <!-- Tags Cloud -->
+      <div id="tags-container" class="tags-cloud">
+        <span class="loading-tag">Φόρτωση tags...</span>
+      </div>
+      
+      <div class="actions">
+        <button id="random-quote-btn" aria-label="Τυχαίο γνωμικό">✨ Τυχαίο Γνωμικό</button>
+        
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Λέξη-κλειδί..." autocomplete="off" />
+          <button id="search-btn">🔍 Αναζήτηση</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Result Section -->
+    <section id="result-section" class="hidden">
+      <div class="result-header">
+        <span id="result-counter">0 αποτελέσματα</span>
+        <div class="nav-controls">
+          <button id="prev-btn" disabled>←</button>
+          <span id="page-indicator">0 / 0</span>
+          <button id="next-btn" disabled>→</button>
+        </div>
+      </div>
+
+      <!-- Active Tag Indicator -->
+      <div id="active-tag-display" class="active-tag"></div>
+
+      <article class="quote-card" id="quote-card">
+        
+        <!-- Prompt Area (Always Visible Initially) -->
+        <div id="quote-prompt">
+          <blockquote id="quote-text" class="main-quote"></blockquote>
+          
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button id="like-btn" class="btn like-btn">❤️ Μου αρέσει!</button>
+            <button id="skip-btn" class="btn skip-btn">⏭️ Ίσως άλλη φορά</button>
+          </div>
+        </div>
+
+        <!-- Details Section (Hidden Until Like) -->
+        <div id="details-section" class="details-hidden">
+          <header class="quote-meta">
+            <img id="cover-img" class="cover-thumb" alt="Book Cover" />
+            <div class="quote-info">
+              <p id="author" class="author-name"></p>
+              <p id="source-book" class="small source-text"></p>
+              <p id="price" class="price-tag"></p>
+            </div>
+          </header>
+
+          <section class="quote-content">
+            <p id="author-bio-short" class="bio-short"></p>
+            
+            <details>
+              <summary>Περισσότερα για τον συγγραφέα</summary>
+              <div class="extra-content">
+                <p id="author-full-bio"></p>
+                <a id="interview-link" target="_blank" rel="noopener noreferrer" class="link-secondary">Συνέντευξη/Άλλα έργα</a>
+              </div>
+            </details>
+          </section>
+
+          <footer class="quote-footer">
+            <a id="buy-link" target="_blank" rel="noopener noreferrer" class="btn buy-btn">Αγορά Βιβλίου ➜</a>
+          </footer>
+        </div>
+
+      </article>
+      
+      <!-- Reset Button -->
+      <div class="reset-search" id="reset-btn-container">
+        <button onclick="window.location.reload()">🔄 Επαναφορά στην αρχική σελίδα</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
